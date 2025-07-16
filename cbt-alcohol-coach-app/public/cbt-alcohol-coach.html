@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBT Alcohol Recovery Coach</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h1 {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .session-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.9em;
+            color: #6b7280;
+        }
+
+        .session-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.8em;
+        }
+
+        .session-badge.urgent {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .session-badge.long-term {
+            background: #f0f9ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+        }
+
+        .crisis-banner {
+            background: #dc2626;
+            color: white;
+            padding: 12px 20px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        .crisis-banner.show {
+            display: block;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .welcome-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .welcome-card h2 {
+            color: #1f2937;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .welcome-card p {
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .disclaimer {
+            background: #fef7cd;
+            border: 1px solid #fbbf24;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #92400e;
+        }
+
+        .messages-container {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 400px;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            max-width: 85%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .message.assistant .message-avatar {
+            background: #10b981;
+            color: white;
+        }
+
+        .message-content {
+            background: #f8fafc;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.5;
+            color: #374151;
+        }
+
+        .message.user .message-content {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .message.assistant .message-content {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+        }
+
+        .input-container {
+            padding: 20px;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-field {
+            flex: 1;
+            min-height: 44px;
+            max-height: 120px;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 22px;
+            resize: none;
+            font-family: inherit;
+            font-size: 1em;
+            line-height: 1.4;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: #3b82f6;
+        }
+
+        .send-button {
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .send-button:hover:not(:disabled) {
+            background: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .send-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            font-style: italic;
+            padding: 12px 16px;
+        }
+
+        .typing-indicator.show {
+            display: flex;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #9ca3af;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .crisis-info {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #dc2626;
+        }
+
+        .crisis-info h4 {
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .crisis-contact {
+            font-weight: 500;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 12px 15px;
+            }
+            
+            .header-title h1 {
+                font-size: 1.2em;
+            }
+            
+            .session-info {
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 5px;
+            }
+            
+            .welcome-card {
+                padding: 20px;
+            }
+            
+            .message {
+                max-width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="crisis-banner" id="crisisBanner">
+        🚨 If you're having thoughts of self-harm or suicide, please call 988 (Suicide & Crisis Lifeline) immediately.
+    </div>
+
+    <div class="header">
+        <div class="header-title">
+            <span style="font-size: 1.5em;">🧠</span>
+            <h1>CBT Alcohol Recovery Coach</h1>
+        </div>
+        <div class="session-info">
+            <span class="session-badge" id="sessionBadge">{{SESSION_TYPE}}</span>
+            <span id="sessionTime">Session started</span>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div class="welcome-card" id="welcomeCard">
+            <h2 id="welcomeTitle">Welcome to Your CBT Alcohol Recovery Coach</h2>
+            <p id="welcomeMessage">
+                I'm here to help you with evidence-based cognitive-behavioral techniques for alcohol recovery. 
+                This is a safe, private space where we can work together on building coping skills and maintaining sobriety.
+            </p>
+            
+            <div class="disclaimer">
+                <strong>⚠️ Important:</strong> I am an AI assistant, not a human therapist or medical professional. 
+                This tool supplements but does not replace professional treatment. If you're in crisis, please contact 
+                emergency services or call 988 (Suicide & Crisis Lifeline).
+            </div>
+
+            <div class="crisis-info" id="crisisInfo" style="display: none;">
+                <h4>🚨 Immediate Support Resources:</h4>
+                <div class="crisis-contact">• Crisis Lifeline: 988</div>
+                <div class="crisis-contact">• Emergency: 911</div>
+                <div class="crisis-contact">• Crisis Text Line: Text HOME to 741741</div>
+            </div>
+        </div>
+
+        <div class="messages-container">
+            <div class="messages" id="messages">
+                <!-- Messages will be added here -->
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <span>🧠</span>
+                <span>Coach is thinking</span>
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <textarea 
+                        id="messageInput" 
+                        class="input-field" 
+                        placeholder="Share what's on your mind or ask for help with cravings..."
+                        rows="1"
+                    ></textarea>
+                    <button id="sendButton" class="send-button">
+                        <span>➤</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sessionId = '{{SESSION_ID}}';
+        const sessionType = '{{SESSION_TYPE}}';
+        const createdAt = new Date('{{CREATED_AT}}');
+        
+        // DOM elements
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const sessionBadge = document.getElementById('sessionBadge');
+        const sessionTime = document.getElementById('sessionTime');
+        const welcomeCard = document.getElementById('welcomeCard');
+        const welcomeTitle = document.getElementById('welcomeTitle');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const crisisInfo = document.getElementById('crisisInfo');
+        const crisisBanner = document.getElementById('crisisBanner');
+
+        let isFirstMessage = true;
+        let messageCount = 0;
+
+        // Initialize session based on type
+        function initializeSession() {
+            if (sessionType === 'urgent') {
+                sessionBadge.className = 'session-badge urgent';
+                sessionBadge.textContent = '🚨 Urgent Session';
+                welcomeTitle.textContent = 'Immediate Support Available';
+                welcomeMessage.textContent = 'I understand you\'re experiencing a craving or difficult moment. Let\'s work through this together using proven CBT techniques. You\'re not alone in this.';
+                crisisInfo.style.display = 'block';
+                crisisBanner.classList.add('show');
+                messageInput.placeholder = 'Tell me what you\'re experiencing right now...';
+            } else {
+                sessionBadge.className = 'session-badge long-term';
+                sessionBadge.textContent = '📚 Structured Session';
+                // Keep default welcome messages for long-term sessions
+            }
+            
+            updateSessionTime();
+            setInterval(updateSessionTime, 60000); // Update every minute
+        }
+
+        function updateSessionTime() {
+            const now = new Date();
+            const elapsed = Math.floor((now - createdAt) / 1000 / 60);
+            sessionTime.textContent = elapsed === 0 ? 'Just started' : `${elapsed} min ago`;
+        }
+
+        function addMessage(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = isUser ? '👤' : '🧠';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            // Format content with basic markdown support
+            let formattedContent = content
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>');
+                
+            contentDiv.innerHTML = formattedContent;
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            messageCount++;
+            
+            // Hide welcome card after first message exchange
+            if (messageCount >= 2) {
+                welcomeCard.style.display = 'none';
+            }
+        }
+
+        function showTyping() {
+            typingIndicator.classList.add('show');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function hideTyping() {
+            typingIndicator.classList.remove('show');
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // Add user message to chat
+            addMessage(message, true);
+            messageInput.value = '';
+            adjustTextareaHeight();
+            
+            // Show typing indicator
+            showTyping();
+            sendButton.disabled = true;
+            
+            try {
+                const response = await fetch('/charm/apps/cbt-alcohol-coach-app/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sessionId: sessionId,
+                        message: message,
+                        isFirstMessage: isFirstMessage
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Add AI response
+                addMessage(data.response);
+                
+                isFirstMessage = false;
+                
+            } catch (error) {
+                console.error('Error sending message:', error);
+                addMessage('I apologize, but I\'m having trouble connecting right now. Please try again in a moment. If this is an emergency, please call 988 or 911.', false);
+            } finally {
+                hideTyping();
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        function adjustTextareaHeight() {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+        }
+
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+        
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        messageInput.addEventListener('input', adjustTextareaHeight);
+
+        // Initialize session
+        initializeSession();
+        messageInput.focus();
+        
+        console.log('CBT Alcohol Recovery Coach initialized', { sessionId, sessionType });
+    </script>
+</body>
+</html>

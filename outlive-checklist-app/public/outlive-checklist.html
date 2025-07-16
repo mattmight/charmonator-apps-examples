@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outlive Longevity Checklist</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .assessment-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .assessment-controls {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background: #2563eb;
+        }
+
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .btn.secondary {
+            background: #6b7280;
+        }
+
+        .btn.secondary:hover {
+            background: #4b5563;
+        }
+
+        .overall-score {
+            padding: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            border: 4px solid rgba(255,255,255,0.3);
+        }
+
+        .score-percentage {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .score-label {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .category-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .category-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .category-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .status-excellent { background: #d1fae5; color: #065f46; }
+        .status-good { background: #dbeafe; color: #1e40af; }
+        .status-needs-attention { background: #fef3c7; color: #92400e; }
+        .status-poor { background: #fee2e2; color: #991b1b; }
+
+        .category-stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stat-icon {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .found { background: #10b981; }
+        .missing { background: #ef4444; }
+        .partial { background: #f59e0b; }
+
+        .test-item {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 3px solid #e5e7eb;
+        }
+
+        .test-item.found { border-left-color: #10b981; }
+        .test-item.missing { border-left-color: #ef4444; }
+        .test-item.partial { border-left-color: #f59e0b; }
+
+        .test-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .test-evidence {
+            color: #6b7280;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .test-details {
+            color: #374151;
+            font-size: 0.9em;
+        }
+
+        .recommendations-section {
+            padding: 20px;
+        }
+
+        .recommendations-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .recommendation {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .recommendation.high { border-left-color: #ef4444; }
+        .recommendation.medium { border-left-color: #f59e0b; }
+        .recommendation.low { border-left-color: #10b981; }
+
+        .rec-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .rec-title {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .rec-priority {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+
+        .priority-high { background: #fee2e2; color: #991b1b; }
+        .priority-medium { background: #fef3c7; color: #92400e; }
+        .priority-low { background: #d1fae5; color: #065f46; }
+
+        .rec-category {
+            color: #6b7280;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .rec-description {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .rec-timeframe {
+            color: #3b82f6;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 40px;
+            color: #ef4444;
+        }
+
+        .error-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .categories-grid {
+                grid-template-columns: 1fr;
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .score-circle {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .score-percentage {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧬 Outlive Longevity Checklist</h1>
+            <p>AI-powered health assessment based on Dr. Peter Attia's comprehensive longevity framework</p>
+        </div>
+
+        <div class="assessment-card">
+            <div id="loadingState" class="loading-state">
+                <div class="spinner"></div>
+                <h3>Initializing Assessment Session...</h3>
+                <p>Loading your medical records and preparing analysis</p>
+            </div>
+
+            <div id="assessmentControls" class="assessment-controls" style="display: none;">
+                <button id="startAssessment" class="btn">🔍 Start Outlive Assessment</button>
+                <button id="viewResults" class="btn secondary" style="display: none;">📊 View Previous Results</button>
+            </div>
+
+            <div id="assessmentResults" style="display: none;">
+                <!-- Results will be populated here -->
+            </div>
+
+            <div id="errorState" class="error-state" style="display: none;">
+                <div class="error-icon">⚠️</div>
+                <h3>Assessment Error</h3>
+                <p id="errorMessage">Unable to load assessment session</p>
+                <button id="retryButton" class="btn" style="margin-top: 20px;">🔄 Retry</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class OutliveAssessment {
+            constructor() {
+                this.sessionId = null;
+                this.sessionData = null;
+                this.assessmentResults = null;
+                this.init();
+            }
+
+            async init() {
+                try {
+                    // Get session ID from URL parameters
+                    const urlParams = new URLSearchParams(window.location.search);
+                    this.sessionId = urlParams.get('session');
+
+                    if (!this.sessionId) {
+                        throw new Error('No session ID provided');
+                    }
+
+                    // Load session data
+                    await this.loadSession();
+                    
+                    // Setup event handlers
+                    this.setupEventHandlers();
+                    
+                    // Show controls
+                    this.showAssessmentControls();
+
+                } catch (error) {
+                    console.error('Initialization error:', error);
+                    this.showError('Failed to initialize assessment session: ' + error.message);
+                }
+            }
+
+            async loadSession() {
+                const response = await fetch(`/charm/apps/outlive-checklist/session/${this.sessionId}`);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to load session');
+                }
+
+                this.sessionData = await response.json();
+                
+                // Check if we already have assessment results
+                if (this.sessionData.assessmentResults) {
+                    this.assessmentResults = this.sessionData.assessmentResults;
+                    document.getElementById('viewResults').style.display = 'inline-block';
+                }
+            }
+
+            setupEventHandlers() {
+                document.getElementById('startAssessment').addEventListener('click', () => {
+                    this.startAssessment();
+                });
+
+                document.getElementById('viewResults').addEventListener('click', () => {
+                    this.showResults();
+                });
+
+                document.getElementById('retryButton').addEventListener('click', () => {
+                    window.location.reload();
+                });
+            }
+
+            showAssessmentControls() {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('assessmentControls').style.display = 'block';
+            }
+
+            async startAssessment() {
+                try {
+                    // Show loading
+                    this.showLoading('🧬 Analyzing Medical Records', 'Performing comprehensive Outlive checklist assessment...');
+
+                    // Start assessment
+                    const response = await fetch('/charm/apps/outlive-checklist/assess', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            sessionId: this.sessionId
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Assessment failed');
+                    }
+
+                    const result = await response.json();
+                    this.assessmentResults = result.assessmentResults;
+
+                    // Show results
+                    this.showResults();
+
+                } catch (error) {
+                    console.error('Assessment error:', error);
+                    this.showError('Assessment failed: ' + error.message);
+                }
+            }
+
+            showResults() {
+                if (!this.assessmentResults) {
+                    this.showError('No assessment results available');
+                    return;
+                }
+
+                const resultsHTML = this.generateResultsHTML();
+                document.getElementById('assessmentResults').innerHTML = resultsHTML;
+                document.getElementById('assessmentResults').style.display = 'block';
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('assessmentControls').style.display = 'none';
+                document.getElementById('errorState').style.display = 'none';
+            }
+
+            generateResultsHTML() {
+                const results = this.assessmentResults;
+                
+                let html = `
+                    <div class="overall-score">
+                        <div class="score-circle">
+                            <div class="score-percentage">${results.overall.completionPercentage}%</div>
+                        </div>
+                        <div class="score-label">Outlive Checklist Completion</div>
+                        <p style="margin-top: 10px; opacity: 0.9;">
+                            ${results.overall.itemsFound} of ${results.overall.totalItems} tests found in your records
+                        </p>
+                    </div>
+                `;
+
+                // Categories section
+                html += '<div class="categories-grid">';
+                
+                for (const [categoryName, categoryData] of Object.entries(results.categories)) {
+                    html += this.generateCategoryHTML(categoryName, categoryData);
+                }
+                
+                html += '</div>';
+
+                // Recommendations section
+                if (results.recommendations && results.recommendations.length > 0) {
+                    html += `
+                        <div class="recommendations-section">
+                            <h2 class="recommendations-title">🎯 Personalized Recommendations</h2>
+                            ${results.recommendations.map(rec => this.generateRecommendationHTML(rec)).join('')}
+                        </div>
+                    `;
+                }
+
+                return html;
+            }
+
+            generateCategoryHTML(categoryName, categoryData) {
+                const statusClass = `status-${categoryData.categoryStatus.replace(' ', '-')}`;
+                
+                return `
+                    <div class="category-card">
+                        <div class="category-header">
+                            <div class="category-title">${categoryName}</div>
+                            <div class="category-status ${statusClass}">
+                                ${categoryData.categoryStatus}
+                            </div>
+                        </div>
+                        
+                        <div class="category-stats">
+                            <div class="stat">
+                                <div class="stat-icon found"></div>
+                                <span>${categoryData.itemsFound} Found</span>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-icon missing"></div>
+                                <span>${categoryData.itemsMissing} Missing</span>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-icon partial"></div>
+                                <span>${categoryData.itemsPartial} Partial</span>
+                            </div>
+                        </div>
+
+                        <div class="category-notes" style="margin-bottom: 15px; color: #6b7280; font-style: italic;">
+                            ${categoryData.categoryNotes}
+                        </div>
+
+                        ${categoryData.items.map(item => this.generateTestItemHTML(item)).join('')}
+                    </div>
+                `;
+            }
+
+            generateTestItemHTML(item) {
+                return `
+                    <div class="test-item ${item.status}">
+                        <div class="test-name">${item.testName}</div>
+                        <div class="test-evidence">${item.evidence}</div>
+                        ${item.details ? `<div class="test-details">${item.details}</div>` : ''}
+                        ${item.lastDate ? `<div class="test-details"><strong>Last Date:</strong> ${item.lastDate}</div>` : ''}
+                        ${item.values ? `<div class="test-details"><strong>Values:</strong> ${item.values}</div>` : ''}
+                    </div>
+                `;
+            }
+
+            generateRecommendationHTML(rec) {
+                const priorityClass = `priority-${rec.priority}`;
+                
+                return `
+                    <div class="recommendation ${rec.priority}">
+                        <div class="rec-header">
+                            <div class="rec-title">${rec.title}</div>
+                            <div class="rec-priority ${priorityClass}">${rec.priority} priority</div>
+                        </div>
+                        <div class="rec-category">Category: ${rec.category}</div>
+                        <div class="rec-description">${rec.description}</div>
+                        <div class="rec-timeframe">⏰ ${rec.timeframe}</div>
+                        ${rec.rationale ? `<div style="margin-top: 10px; font-style: italic; color: #6b7280;">${rec.rationale}</div>` : ''}
+                    </div>
+                `;
+            }
+
+            showLoading(title, message) {
+                document.getElementById('loadingState').innerHTML = `
+                    <div class="spinner"></div>
+                    <h3>${title}</h3>
+                    <p>${message}</p>
+                `;
+                document.getElementById('loadingState').style.display = 'block';
+                document.getElementById('assessmentControls').style.display = 'none';
+                document.getElementById('assessmentResults').style.display = 'none';
+                document.getElementById('errorState').style.display = 'none';
+            }
+
+            showError(message) {
+                document.getElementById('errorMessage').textContent = message;
+                document.getElementById('errorState').style.display = 'block';
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('assessmentControls').style.display = 'none';
+                document.getElementById('assessmentResults').style.display = 'none';
+            }
+        }
+
+        // Initialize the assessment when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new OutliveAssessment();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="theme-color" content="#28a745">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Chat with Records">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Chat with Records">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%2328a745%22/><text y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22 x=%2250%22 fill=%22white%22>💬</text></svg>">
+    <title>Chat with Medical Records</title>
+    
+    <!-- External Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.0/purify.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #212529;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 0.25rem;
+        }
+
+        /* Session Info Banner */
+        .session-banner {
+            background: rgba(0, 123, 255, 0.1);
+            border: 1px solid rgba(0, 123, 255, 0.3);
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin: 1rem;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .session-banner.active {
+            display: block;
+        }
+
+        .session-banner .session-id {
+            font-family: monospace;
+            background: rgba(0, 123, 255, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            margin: 0.25rem 0;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Messages Area */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Message Styles */
+        .message {
+            max-width: 85%;
+            padding: 0.75rem 1rem;
+            border-radius: 18px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: #007bff;
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            background: white;
+            color: #212529;
+            border: 1px solid #e9ecef;
+            border-bottom-left-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .message.system {
+            align-self: center;
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #e9ecef;
+            font-style: italic;
+            text-align: center;
+            border-radius: 12px;
+            max-width: 70%;
+        }
+
+        /* Timestamp */
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            align-self: flex-start;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 18px;
+            border-bottom-left-radius: 6px;
+            padding: 1rem;
+            display: none;
+        }
+
+        .typing-indicator.active {
+            display: block;
+        }
+
+        .dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #6c757d;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        /* Input Area */
+        .input-container {
+            padding: 1rem;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .message-input {
+            width: 100%;
+            min-height: 44px;
+            max-height: 120px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ced4da;
+            border-radius: 22px;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .message-input:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+
+        .send-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-button:hover:not(:disabled) {
+            background: #218838;
+        }
+
+        .send-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        /* Medical Context Panel */
+        .context-panel {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .context-panel.active {
+            display: block;
+        }
+
+        .context-toggle {
+            background: none;
+            border: none;
+            color: #ffc107;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0;
+            font: inherit;
+        }
+
+        .context-content {
+            margin-top: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.8rem;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 0.5rem;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            display: none;
+        }
+
+        .context-content.expanded {
+            display: block;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .message {
+                max-width: 95%;
+            }
+            
+            .input-container {
+                padding: 0.75rem;
+            }
+            
+            .header {
+                padding: 0.75rem;
+            }
+            
+            .header h1 {
+                font-size: 1.25rem;
+            }
+        }
+
+        /* Code Syntax Highlighting */
+        .message pre {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 0.75rem;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+
+        .message code {
+            background: #f8f9fa;
+            padding: 0.125rem 0.25rem;
+            border-radius: 3px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+        }
+
+        .message pre code {
+            background: none;
+            padding: 0;
+        }
+
+        /* Medical terminology highlighting */
+        .medical-term {
+            background: rgba(40, 167, 69, 0.1);
+            border-bottom: 1px dotted #28a745;
+            cursor: help;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>
+            <i class="fas fa-comments"></i>
+            Chat with Medical Records
+        </h1>
+        <div class="subtitle">AI-powered conversation about your health data</div>
+    </div>
+
+    <!-- Session Info Banner -->
+    <div id="sessionBanner" class="session-banner">
+        <div><strong>Medical Record Session Active</strong></div>
+        <div>Session ID: <span id="sessionIdDisplay" class="session-id"></span></div>
+        <div>Context: <span id="contextSummary"></span></div>
+        <div>Expires: <span id="sessionExpiry"></span></div>
+    </div>
+
+    <!-- Medical Context Panel -->
+    <div id="contextPanel" class="context-panel">
+        <div>
+            <strong>Medical Record Context:</strong>
+            <button id="contextToggle" class="context-toggle">Show/Hide Records</button>
+        </div>
+        <div id="contextContent" class="context-content"></div>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="chat-container">
+        <!-- Messages Area -->
+        <div id="messagesContainer" class="messages-container">
+            <!-- Welcome message will be inserted here -->
+        </div>
+
+        <!-- Typing Indicator -->
+        <div id="typingIndicator" class="typing-indicator">
+            <div class="dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-container">
+            <div class="input-wrapper">
+                <textarea 
+                    id="messageInput" 
+                    class="message-input" 
+                    placeholder="Ask about your medical records..."
+                    rows="1"
+                ></textarea>
+            </div>
+            <button id="sendButton" class="send-button" disabled>
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Configuration
+        const API_BASE = '/charm/apps/chat-with-records';
+        
+        // DOM Elements
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const sessionBanner = document.getElementById('sessionBanner');
+        const sessionIdDisplay = document.getElementById('sessionIdDisplay');
+        const contextSummary = document.getElementById('contextSummary');
+        const sessionExpiry = document.getElementById('sessionExpiry');
+        const contextPanel = document.getElementById('contextPanel');
+        const contextToggle = document.getElementById('contextToggle');
+        const contextContent = document.getElementById('contextContent');
+
+        // State
+        let currentSessionId = null;
+        let isWaitingForResponse = false;
+        let sessionData = null;
+
+        // Configure marked for markdown rendering
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            setupEventListeners();
+            await loadSessionFromURL();
+        });
+
+        function setupEventListeners() {
+            // Send message on button click
+            sendButton.addEventListener('click', sendMessage);
+
+            // Send message on Enter (but allow Shift+Enter for new lines)
+            messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Auto-resize textarea and enable/disable send button
+            messageInput.addEventListener('input', () => {
+                autoResizeTextarea();
+                sendButton.disabled = !messageInput.value.trim() || isWaitingForResponse;
+            });
+
+            // Context panel toggle
+            contextToggle.addEventListener('click', () => {
+                contextContent.classList.toggle('expanded');
+            });
+        }
+
+        function autoResizeTextarea() {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+        }
+
+        async function loadSessionFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sessionId = urlParams.get('session');
+
+            if (!sessionId) {
+                showSystemMessage('No session ID provided. Please access this chat through the FHIR-HOSE app.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/session/${sessionId}`);
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Session not found');
+                    } else if (response.status === 410) {
+                        throw new Error('Session has expired');
+                    } else {
+                        throw new Error('Failed to load session');
+                    }
+                }
+
+                sessionData = await response.json();
+                currentSessionId = sessionId;
+
+                // Update UI with session info
+                updateSessionDisplay();
+                showWelcomeMessage();
+                
+                // Enable input
+                messageInput.disabled = false;
+                messageInput.focus();
+
+            } catch (error) {
+                console.error('Error loading session:', error);
+                showSystemMessage(`Error: ${error.message}`);
+            }
+        }
+
+        function updateSessionDisplay() {
+            sessionBanner.classList.add('active');
+            sessionIdDisplay.textContent = currentSessionId;
+            
+            const recordCount = sessionData.chatContext.recordCount || 'Multiple';
+            const patientName = sessionData.chatContext.patientName || 'Patient';
+            contextSummary.textContent = `${recordCount} records for ${patientName}`;
+            
+            const expiryDate = new Date(sessionData.metadata.expiresAt);
+            sessionExpiry.textContent = expiryDate.toLocaleString();
+
+            // Show context panel if we have medical record context
+            if (sessionData.systemPrompt) {
+                contextPanel.classList.add('active');
+                contextContent.textContent = sessionData.systemPrompt;
+            }
+        }
+
+        function showWelcomeMessage() {
+            const welcomeText = `Welcome! I'm ready to discuss your medical records. I have access to your health data and can answer questions about:
+
+• Medical history and patterns
+• Test results and their meanings  
+• Medications and treatments
+• Symptom correlations
+• Gaps in your medical records
+
+**Important:** I provide information only - always consult your healthcare provider for medical advice.
+
+What would you like to know about your health records?`;
+
+            addMessage('assistant', welcomeText);
+        }
+
+        function showSystemMessage(text) {
+            addMessage('system', text);
+        }
+
+        function addMessage(role, content, timestamp = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+
+            if (role === 'assistant') {
+                // Render markdown for assistant messages
+                const sanitized = DOMPurify.sanitize(marked.parse(content));
+                messageDiv.innerHTML = sanitized;
+                
+                // Highlight code blocks
+                messageDiv.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            } else {
+                messageDiv.textContent = content;
+            }
+
+            // Add timestamp
+            if (timestamp || role !== 'system') {
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'message-time';
+                timeDiv.textContent = timestamp ? new Date(timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
+                messageDiv.appendChild(timeDiv);
+            }
+
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || isWaitingForResponse || !currentSessionId) return;
+
+            // Add user message to chat
+            addMessage('user', message);
+            
+            // Clear input
+            messageInput.value = '';
+            autoResizeTextarea();
+            
+            // Disable input and show typing indicator
+            isWaitingForResponse = true;
+            sendButton.disabled = true;
+            messageInput.disabled = true;
+            typingIndicator.classList.add('active');
+
+            try {
+                const response = await fetch(`${API_BASE}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        sessionId: currentSessionId,
+                        message: message
+                    })
+                });
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Session not found');
+                    } else if (response.status === 410) {
+                        throw new Error('Session has expired');
+                    } else {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Failed to send message');
+                    }
+                }
+
+                const data = await response.json();
+                
+                // Add assistant response
+                addMessage('assistant', data.message, data.timestamp);
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showSystemMessage(`Error: ${error.message}`);
+            } finally {
+                // Re-enable input
+                isWaitingForResponse = false;
+                messageInput.disabled = false;
+                sendButton.disabled = !messageInput.value.trim();
+                typingIndicator.classList.remove('active');
+                messageInput.focus();
+            }
+        }
+
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>

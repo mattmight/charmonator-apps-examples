@@ -1,0 +1,42 @@
+{
+  "name": "Undiagnosed Diseases Network",
+  "description": "AI-powered application assistance for the Undiagnosed Diseases Network program",
+  "version": "1.0.0",
+  "baseRoute": "/apps/undiagnosed-diseases",
+  "staticRoute": "/apps/undiagnosed-diseases",
+  "features": [
+    "Comprehensive medical record analysis",
+    "Diagnostic odyssey assessment", 
+    "UDN application preparation",
+    "Clinical phenotyping assistance",
+    "Rare disease pattern recognition",
+    "Multi-omics data integration support"
+  ],
+  "models": {
+    "default": "hipaa:o3-high",
+    "fallback": "hipaa:gpt-4o",
+    "options": [
+      "hipaa:o3-high",
+      "hipaa:o1-high", 
+      "hipaa:gpt-4o",
+      "hipaa:gpt-4o-mini"
+    ]
+  },
+  "sessionConfig": {
+    "expirationHours": 48,
+    "maxMedicalRecordSize": 500000,
+    "enableApplicationDrafts": true
+  },
+  "security": {
+    "requireHIPAACompliantModels": true,
+    "enableSessionCleanup": true,
+    "logMedicalInteractions": false
+  },
+  "applicationCategories": [
+    "Medical History",
+    "Diagnostic Journey", 
+    "Clinical Phenotyping",
+    "Family History",
+    "Previous Testing"
+  ]
+}

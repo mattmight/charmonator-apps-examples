@@ -1,0 +1,9 @@
+{
+  "name": "charmonator-apps-examples",
+  "version": "1.0.0",
+  "description": "Example applications for Charmonator",
+  "type": "module",
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}

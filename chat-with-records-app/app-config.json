@@ -1,0 +1,34 @@
+{
+  "name": "Chat with Medical Records",
+  "description": "AI-powered chat interface with pre-loaded patient medical records",
+  "version": "1.0.0",
+  "baseRoute": "/apps/chat-with-records",
+  "staticRoute": "/apps/chat-with-records",
+  "features": [
+    "Medical record pre-population",
+    "HIPAA-compliant chat interface",
+    "Session-based record context",
+    "Medical terminology support",
+    "Chat history export"
+  ],
+  "models": {
+    "default": "hipaa:o3-high",
+    "fallback": "hipaa:gpt-4o",
+    "options": [
+      "hipaa:o3-high",
+      "hipaa:o1-high", 
+      "hipaa:gpt-4o",
+      "hipaa:gpt-4o-mini"
+    ]
+  },
+  "sessionConfig": {
+    "expirationHours": 24,
+    "maxMedicalRecordSize": 50000,
+    "enableChatHistory": true
+  },
+  "security": {
+    "requireHIPAACompliantModels": true,
+    "enableSessionCleanup": true,
+    "logMedicalInteractions": false
+  }
+}

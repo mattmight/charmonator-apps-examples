@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="theme-color" content="#007aff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Trial Matcher">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Trial Matcher">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23007aff%22/><text y=%2270%22 font-size=%2270%22 text-anchor=%22middle%22 x=%2250%22 fill=%22white%22>🧬</text></svg>">
+    <title>Clinical Trial Matcher</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            padding: 15px;
+            padding-top: max(15px, env(safe-area-inset-top));
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
+            padding-left: max(15px, env(safe-area-inset-left));
+            padding-right: max(15px, env(safe-area-inset-right));
+            color: #1d1d1f;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+            line-height: 1.1;
+            letter-spacing: -0.01em;
+        }
+
+        .header p {
+            font-size: clamp(1rem, 3vw, 1.1rem);
+            color: #86868b;
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: clamp(20px, 4vw, 30px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card h2 {
+            font-size: clamp(1.25rem, 4vw, 1.5rem);
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1d1d1f;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #1d1d1f;
+        }
+
+        .form-group textarea, .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e5e7;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: clamp(14px, 3.5vw, 16px);
+            transition: border-color 0.2s ease;
+            background: rgba(255, 255, 255, 0.7);
+            line-height: 1.5;
+        }
+
+        .form-group textarea {
+            min-height: clamp(150px, 25vh, 200px);
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #007aff;
+        }
+
+        .criteria-section {
+            margin-bottom: 25px;
+        }
+
+        .criteria-section h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1d1d1f;
+        }
+
+        .criteria-list {
+            list-style: none;
+        }
+
+        .criteria-item {
+            display: flex;
+            align-items: stretch;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            gap: 10px;
+        }
+
+        .criteria-item input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #e5e5e7;
+            border-radius: 8px;
+            font-size: clamp(14px, 3.5vw, 16px);
+            background: rgba(255, 255, 255, 0.7);
+            min-height: 44px;
+        }
+
+        .btn {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: clamp(14px, 3.5vw, 16px);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 44px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #f2f2f7;
+            color: #007aff;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8ed;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 8px;
+        }
+
+        .btn-danger {
+            background: #ff3b30;
+        }
+
+        .btn-danger:hover {
+            background: #d70015;
+        }
+
+        /* Tab interface styles */
+        .trial-selection-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            background: #f2f2f7;
+            padding: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #86868b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: #007aff;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* NCT input group */
+        .nct-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .nct-input-group input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e5e5e7;
+            border-radius: 8px;
+            font-size: clamp(14px, 3.5vw, 16px);
+            background: rgba(255, 255, 255, 0.7);
+            min-height: 44px;
+            text-transform: uppercase;
+        }
+
+        .nct-input-group input:focus {
+            outline: none;
+            border-color: #007aff;
+        }
+
+        /* Trial info section */
+        .trial-info-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 122, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 122, 255, 0.1);
+        }
+
+        .trial-info-section h3 {
+            color: #007aff;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .trial-detail-item {
+            display: flex;
+            margin-bottom: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .trial-detail-label {
+            font-weight: 600;
+            color: #1d1d1f;
+            min-width: 120px;
+            flex-shrink: 0;
+        }
+
+        .trial-detail-value {
+            color: #86868b;
+            flex: 1;
+        }
+
+        .results-section {
+            display: none;
+            grid-column: 1 / -1;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .eligibility-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .eligible {
+            background: #d1f2eb;
+            color: #00b074;
+        }
+
+        .ineligible {
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+
+        .needs-review {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: clamp(30px, 6vw, 40px);
+            color: #86868b;
+        }
+
+        .spinner {
+            border: 3px solid #f2f2f7;
+            border-top: 3px solid #007aff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Hidden class for medical record */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Populate-specific styles */
+        .populate-banner {
+            background: rgba(0, 122, 255, 0.1);
+            border: 1px solid rgba(0, 122, 255, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .populate-banner h3 {
+            color: #007aff;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .populate-banner p {
+            color: #86868b;
+            font-size: 0.9rem;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                padding-top: max(10px, env(safe-area-inset-top));
+                padding-bottom: max(10px, env(safe-area-inset-bottom));
+                padding-left: max(10px, env(safe-area-inset-left));
+                padding-right: max(10px, env(safe-area-inset-right));
+            }
+            
+            .container {
+                padding: 0;
+            }
+            
+            .main-content {
+                gap: 20px;
+            }
+            
+            .card {
+                border-radius: 16px;
+                padding: 20px;
+            }
+            
+            .header {
+                margin-bottom: 25px;
+            }
+            
+            .criteria-item {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            
+            .criteria-item input {
+                margin-right: 0;
+                margin-bottom: 8px;
+            }
+            
+            .btn-small {
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+                padding-top: max(8px, env(safe-area-inset-top));
+                padding-bottom: max(8px, env(safe-area-inset-bottom));
+                padding-left: max(8px, env(safe-area-inset-left));
+                padding-right: max(8px, env(safe-area-inset-right));
+            }
+            
+            .card {
+                border-radius: 12px;
+                padding: 16px;
+            }
+            
+            .form-group textarea, .form-group input {
+                min-height: 120px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+            
+            .criteria-item input {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+            
+            .btn {
+                padding: 14px 18px;
+                font-size: 16px;
+                min-height: 48px;
+            }
+            
+            .btn-small {
+                padding: 10px 14px;
+                font-size: 14px;
+                min-height: 40px;
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .btn:hover {
+                transform: none;
+            }
+            
+            .btn:active {
+                transform: scale(0.98);
+                background: #0056b3;
+            }
+            
+            .criteria-item input:focus,
+            .form-group textarea:focus,
+            .form-group input:focus {
+                border-color: #007aff;
+                box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Clinical Trial Matcher</h1>
+            <p>AI-powered eligibility assessment for clinical trials</p>
+        </div>
+
+        <div class="populate-banner">
+            <h3>📋 Medical Record Pre-loaded</h3>
+            <p>Patient data has been securely loaded. Select trial criteria to begin evaluation.</p>
+        </div>
+
+        <!-- Hidden medical record data (accessible to JavaScript but not visible) -->
+        <div id="medicalRecordData" class="hidden">{{MEDICAL_RECORD}}</div>
+        <div id="sessionId" class="hidden">{{SESSION_ID}}</div>
+        <div id="timestamp" class="hidden">{{TIMESTAMP}}</div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>Trial Selection</h2>
+                
+                <div class="trial-selection-tabs">
+                    <button class="tab-btn active" onclick="switchTab('nct-lookup')">NCT Lookup</button>
+                    <button class="tab-btn" onclick="switchTab('manual-entry')">Manual Entry</button>
+                </div>
+
+                <div id="nct-lookup-tab" class="tab-content active">
+                    <div class="form-group">
+                        <label for="nctNumber">Enter NCT Number:</label>
+                        <div class="nct-input-group">
+                            <input type="text" id="nctNumber" placeholder="NCT00000102" pattern="NCT\d{8}" />
+                            <button class="btn btn-secondary" onclick="loadTrialData()">Load Trial</button>
+                        </div>
+                    </div>
+                    
+                    <div id="trial-info" class="trial-info-section" style="display: none;">
+                        <h3>Trial Information</h3>
+                        <div id="trial-details"></div>
+                    </div>
+                </div>
+
+                <div id="manual-entry-tab" class="tab-content">
+                    <div class="criteria-section">
+                        <h3>Inclusion Criteria</h3>
+                        <ul class="criteria-list" id="inclusionCriteria">
+                            <li class="criteria-item">
+                                <input type="text" placeholder="Age 18-65 years" />
+                                <button class="btn btn-danger btn-small" onclick="removeCriterion(this)">Remove</button>
+                            </li>
+                            <li class="criteria-item">
+                                <input type="text" placeholder="Diagnosis of specific condition" />
+                                <button class="btn btn-danger btn-small" onclick="removeCriterion(this)">Remove</button>
+                            </li>
+                        </ul>
+                        <button class="btn btn-secondary btn-small" onclick="addCriterion('inclusionCriteria')">Add Inclusion Criterion</button>
+                    </div>
+
+                    <div class="criteria-section">
+                        <h3>Exclusion Criteria</h3>
+                        <ul class="criteria-list" id="exclusionCriteria">
+                            <li class="criteria-item">
+                                <input type="text" placeholder="Pregnancy" />
+                                <button class="btn btn-danger btn-small" onclick="removeCriterion(this)">Remove</button>
+                            </li>
+                            <li class="criteria-item">
+                                <input type="text" placeholder="Severe medical condition" />
+                                <button class="btn btn-danger btn-small" onclick="removeCriterion(this)">Remove</button>
+                            </li>
+                        </ul>
+                        <button class="btn btn-secondary btn-small" onclick="addCriterion('exclusionCriteria')">Add Exclusion Criterion</button>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="evaluateEligibility()" style="width: 100%; margin-top: 20px;">Evaluate Eligibility</button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing medical record and evaluating criteria...</p>
+            </div>
+
+            <div class="card results-section" id="results">
+                <div class="results-header">
+                    <h2>Eligibility Assessment Results</h2>
+                    <div class="eligibility-badge" id="overallEligibility"></div>
+                </div>
+                <div id="resultsContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTrialData = null;
+        let currentMode = 'nct-lookup';
+
+        // Get pre-loaded medical record from hidden element
+        function getMedicalRecord() {
+            const medicalRecordElement = document.getElementById('medicalRecordData');
+            return medicalRecordElement ? medicalRecordElement.textContent.trim() : '';
+        }
+
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+
+            currentMode = tabName;
+        }
+
+        // NCT lookup functionality
+        async function loadTrialData() {
+            const nctNumber = document.getElementById('nctNumber').value.trim().toUpperCase();
+            
+            if (!nctNumber) {
+                alert('Please enter an NCT number.');
+                return;
+            }
+
+            if (!nctNumber.match(/^NCT\d{8}$/)) {
+                alert('Please enter a valid NCT number (format: NCT00000000).');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/charm/apps/clinical-trial-matcher/nct/${nctNumber}`);
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error(`Trial ${nctNumber} not found in database.`);
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const trialData = await response.json();
+                currentTrialData = trialData;
+                displayTrialInfo(trialData);
+
+            } catch (error) {
+                console.error('Error loading trial data:', error);
+                alert('Error loading trial data: ' + error.message);
+                document.getElementById('trial-info').style.display = 'none';
+            }
+        }
+
+        function displayTrialInfo(trialData) {
+            const trialInfoSection = document.getElementById('trial-info');
+            const trialDetails = document.getElementById('trial-details');
+
+            let html = `
+                <div class="trial-detail-item">
+                    <span class="trial-detail-label">NCT Number:</span>
+                    <span class="trial-detail-value">${trialData.nctNumber}</span>
+                </div>
+                <div class="trial-detail-item">
+                    <span class="trial-detail-label">Title:</span>
+                    <span class="trial-detail-value">${trialData.studyInfo.briefTitle}</span>
+                </div>
+                <div class="trial-detail-item">
+                    <span class="trial-detail-label">Condition:</span>
+                    <span class="trial-detail-value">${trialData.studyInfo.condition || 'Not specified'}</span>
+                </div>
+                <div class="trial-detail-item">
+                    <span class="trial-detail-label">Phase:</span>
+                    <span class="trial-detail-value">${trialData.studyInfo.phase || 'Not specified'}</span>
+                </div>
+                <div class="trial-detail-item">
+                    <span class="trial-detail-label">Status:</span>
+                    <span class="trial-detail-value">${trialData.studyInfo.overallStatus}</span>
+                </div>
+                <div class="trial-detail-item">
+                    <span class="trial-detail-label">Age Range:</span>
+                    <span class="trial-detail-value">${trialData.eligibility.minimumAge} to ${trialData.eligibility.maximumAge}</span>
+                </div>
+                <div class="trial-detail-item">
+                    <span class="trial-detail-label">Gender:</span>
+                    <span class="trial-detail-value">${trialData.eligibility.gender}</span>
+                </div>
+            `;
+
+            trialDetails.innerHTML = html;
+            trialInfoSection.style.display = 'block';
+        }
+
+        // Manual entry functions
+        function addCriterion(listId) {
+            const list = document.getElementById(listId);
+            const li = document.createElement('li');
+            li.className = 'criteria-item';
+            li.innerHTML = `
+                <input type="text" placeholder="Enter criterion..." />
+                <button class="btn btn-danger btn-small" onclick="removeCriterion(this)">Remove</button>
+            `;
+            list.appendChild(li);
+        }
+
+        function removeCriterion(button) {
+            button.parentElement.remove();
+        }
+
+        function getCriteriaFromList(listId) {
+            const list = document.getElementById(listId);
+            const inputs = list.querySelectorAll('input[type="text"]');
+            return Array.from(inputs)
+                .map(input => input.value.trim())
+                .filter(value => value.length > 0);
+        }
+
+        // Enhanced evaluation function
+        async function evaluateEligibility() {
+            const medicalRecord = getMedicalRecord();
+            
+            if (!medicalRecord) {
+                alert('Medical record data not found. Please reload the page.');
+                return;
+            }
+
+            let endpoint, requestBody;
+
+            if (currentMode === 'nct-lookup') {
+                const nctNumber = document.getElementById('nctNumber').value.trim().toUpperCase();
+                
+                if (!nctNumber) {
+                    alert('Please enter an NCT number or switch to Manual Entry mode.');
+                    return;
+                }
+
+                if (!nctNumber.match(/^NCT\d{8}$/)) {
+                    alert('Please enter a valid NCT number (format: NCT00000000).');
+                    return;
+                }
+
+                endpoint = '/charm/apps/clinical-trial-matcher/comprehensive-match-nct';
+                requestBody = {
+                    medicalRecord,
+                    nctNumber
+                };
+            } else {
+                const inclusionCriteria = getCriteriaFromList('inclusionCriteria');
+                const exclusionCriteria = getCriteriaFromList('exclusionCriteria');
+
+                if (inclusionCriteria.length === 0 || exclusionCriteria.length === 0) {
+                    alert('Please add at least one inclusion and one exclusion criterion.');
+                    return;
+                }
+
+                endpoint = '/charm/apps/clinical-trial-matcher/comprehensive-match';
+                requestBody = {
+                    medicalRecord,
+                    trialCriteria: {
+                        inclusionCriteria,
+                        exclusionCriteria
+                    }
+                };
+            }
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                displayEnhancedResults(data);
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error evaluating eligibility: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // Enhanced results display
+        function displayEnhancedResults(data) {
+            const resultsSection = document.getElementById('results');
+            const overallEligibility = document.getElementById('overallEligibility');
+            const resultsContent = document.getElementById('resultsContent');
+
+            // Check if this is a comprehensive evaluation
+            const isComprehensive = data.overallAssessment && data.criteriaAnalysis;
+
+            if (isComprehensive) {
+                displayComprehensiveResults(data, resultsSection, overallEligibility, resultsContent);
+            } else {
+                displayBasicResults(data, resultsSection, overallEligibility, resultsContent);
+            }
+
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function displayComprehensiveResults(data, resultsSection, overallEligibility, resultsContent) {
+            // Set overall eligibility
+            const eligibility = data.overallAssessment.eligibility;
+            overallEligibility.textContent = eligibility.replace('-', ' ').toUpperCase();
+            overallEligibility.className = `eligibility-badge ${eligibility}`;
+
+            let html = `
+                <div style="background: rgba(0, 122, 255, 0.05); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 8px; color: #1d1d1f;">Clinical Summary</h4>
+                    <p style="margin: 0; line-height: 1.5;">${data.overallAssessment.clinicalSummary}</p>
+                </div>
+                
+                <div style="background: rgba(0, 122, 255, 0.05); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 8px; color: #1d1d1f;">Safety Assessment</h4>
+                    <p style="margin: 0; line-height: 1.5;">${data.overallAssessment.safetyAssessment}</p>
+                </div>
+
+                <div style="padding: 15px; background: rgba(0,0,0,0.05); border-radius: 10px; margin-bottom: 20px;">
+                    <strong>Patient ID:</strong> ${data.patientId}<br>
+                    <strong>Assessment Time:</strong> ${new Date(data.timestamp).toLocaleString()}<br>
+                    ${data.nctNumber ? `<strong>NCT Number:</strong> ${data.nctNumber}<br>` : ''}
+                    ${data.trialInfo ? `<strong>Trial:</strong> ${data.trialInfo.title}<br>` : ''}
+                    <strong>Evaluation Type:</strong> ${data.evaluationType || 'Comprehensive AI Analysis'}<br>
+                    <strong>Overall Confidence:</strong> ${Math.round(data.overallAssessment.confidence * 100)}%
+                </div>
+            `;
+
+            // Add criteria analysis
+            if (data.criteriaAnalysis && data.criteriaAnalysis.length > 0) {
+                html += '<h3 style="margin-bottom: 15px;">Detailed Criteria Analysis</h3>';
+                
+                data.criteriaAnalysis.forEach(criterion => {
+                    const statusClass = criterion.status.replace('-', '-');
+                    const statusColor = statusClass === 'matched' ? '#00b074' : 
+                                       statusClass === 'non-matched' ? '#e74c3c' : '#ffc107';
+                    
+                    html += `
+                        <div style="background: rgba(255, 255, 255, 0.6); border-radius: 12px; padding: 20px; margin-bottom: 15px; border-left: 4px solid ${statusColor};">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <div>
+                                    <div style="background: #f2f2f7; color: #86868b; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 500; text-transform: uppercase; display: inline-block; margin-bottom: 5px;">
+                                        ${criterion.type}
+                                    </div>
+                                    <div style="font-weight: 600;">${criterion.criterion}</div>
+                                </div>
+                                <div style="padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; background: ${statusClass === 'matched' ? '#d1f2eb' : statusClass === 'non-matched' ? '#fadbd8' : '#fff3cd'}; color: ${statusColor};">
+                                    ${criterion.status.replace('-', ' ').toUpperCase()}
+                                </div>
+                            </div>
+                            
+                            <p style="margin: 12px 0; color: #1d1d1f; line-height: 1.5;">
+                                ${criterion.clinicalReasoning}
+                            </p>
+                            
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
+                                <small style="color: #86868b;">Confidence: ${Math.round(criterion.confidence * 100)}%</small>
+                                <div style="background: #f2f2f7; height: 4px; border-radius: 2px; width: 100px; overflow: hidden;">
+                                    <div style="height: 100%; background: #007aff; width: ${criterion.confidence * 100}%; transition: width 0.3s ease;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            resultsContent.innerHTML = html;
+        }
+
+        function displayBasicResults(data, resultsSection, overallEligibility, resultsContent) {
+            // Set overall eligibility
+            overallEligibility.textContent = data.overallEligibility.replace('-', ' ').toUpperCase();
+            overallEligibility.className = `eligibility-badge ${data.overallEligibility}`;
+
+            // Build results HTML (simplified version)
+            let html = `
+                <div style="margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.05); border-radius: 10px;">
+                    <strong>Patient ID:</strong> ${data.patientId}<br>
+                    <strong>Assessment Time:</strong> ${new Date(data.timestamp).toLocaleString()}<br>
+                    ${data.nctNumber ? `<strong>NCT Number:</strong> ${data.nctNumber}<br>` : ''}
+                    ${data.trialTitle ? `<strong>Trial:</strong> ${data.trialTitle}<br>` : ''}
+                    <strong>Evaluation Type:</strong> Basic Criterion Analysis
+                </div>
+            `;
+
+            data.results.forEach(result => {
+                const statusClass = result.status.replace('-', '-');
+                const statusColor = statusClass === 'matched' ? '#00b074' : 
+                                   statusClass === 'non-matched' ? '#e74c3c' : '#ffc107';
+                
+                html += `
+                    <div style="background: rgba(255, 255, 255, 0.6); border-radius: 12px; padding: 20px; margin-bottom: 15px; border-left: 4px solid ${statusColor};">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div>
+                                <div style="background: #f2f2f7; color: #86868b; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 500; text-transform: uppercase; display: inline-block; margin-bottom: 5px;">
+                                    ${result.type}
+                                </div>
+                                <div style="font-weight: 600;">${result.criterion}</div>
+                            </div>
+                            <div style="padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; background: ${statusClass === 'matched' ? '#d1f2eb' : statusClass === 'non-matched' ? '#fadbd8' : '#fff3cd'}; color: ${statusColor};">
+                                ${result.status.replace('-', ' ').toUpperCase()}
+                            </div>
+                        </div>
+                        <p style="margin: 10px 0; color: #666;">${result.reasoning}</p>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
+                            <small style="color: #86868b;">Confidence: ${Math.round(result.confidence * 100)}%</small>
+                            <div style="background: #f2f2f7; height: 4px; border-radius: 2px; width: 100px; overflow: hidden;">
+                                <div style="height: 100%; background: #007aff; width: ${result.confidence * 100}%; transition: width 0.3s ease;"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            resultsContent.innerHTML = html;
+        }
+
+        // Auto-format NCT number as user types
+        document.addEventListener('DOMContentLoaded', function() {
+            const nctInput = document.getElementById('nctNumber');
+            
+            // NCT input formatting and shortcuts
+            nctInput.addEventListener('input', function() {
+                let value = this.value.toUpperCase().replace(/[^0-9NCT]/g, '');
+                if (value.length > 0 && !value.startsWith('NCT')) {
+                    if (value.match(/^\d/)) {
+                        value = 'NCT' + value;
+                    }
+                }
+                if (value.length > 11) {
+                    value = value.substring(0, 11);
+                }
+                this.value = value;
+            });
+
+            // Allow Enter key to load trial data
+            nctInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    loadTrialData();
+                }
+            });
+
+            // Global keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Cmd/Ctrl + Enter: Evaluate eligibility
+                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    evaluateEligibility();
+                }
+                
+                // Cmd/Ctrl + 1: Switch to NCT lookup tab
+                if ((e.metaKey || e.ctrlKey) && e.key === '1') {
+                    e.preventDefault();
+                    switchTab('nct-lookup');
+                }
+                
+                // Cmd/Ctrl + 2: Switch to manual entry tab
+                if ((e.metaKey || e.ctrlKey) && e.key === '2') {
+                    e.preventDefault();
+                    switchTab('manual-entry');
+                }
+                
+                // Escape: Clear results
+                if (e.key === 'Escape') {
+                    const results = document.getElementById('results');
+                    if (results.style.display !== 'none') {
+                        results.style.display = 'none';
+                    }
+                }
+            });
+
+            // Show medical record data availability
+            const medicalRecord = getMedicalRecord();
+            if (medicalRecord) {
+                console.log('Medical record loaded:', medicalRecord.substring(0, 100) + '...');
+            }
+        });
+    </script>
+</body>
+</html>

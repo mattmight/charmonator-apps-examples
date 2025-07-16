@@ -1,0 +1,41 @@
+{
+  "name": "Outlive Longevity Checklist",
+  "description": "AI-powered health assessment based on Dr. Peter Attia's Outlive book checklist",
+  "version": "1.0.0",
+  "baseRoute": "/apps/outlive-checklist",
+  "staticRoute": "/apps/outlive-checklist",
+  "features": [
+    "Comprehensive health record analysis",
+    "Outlive book checklist evaluation",
+    "Missing test identification",
+    "Longevity risk assessment",
+    "Personalized health recommendations"
+  ],
+  "models": {
+    "default": "hipaa:o3-high",
+    "fallback": "hipaa:gpt-4o",
+    "options": [
+      "hipaa:o3-high",
+      "hipaa:o1-high", 
+      "hipaa:gpt-4o",
+      "hipaa:gpt-4o-mini"
+    ]
+  },
+  "sessionConfig": {
+    "expirationHours": 24,
+    "maxMedicalRecordSize": 100000,
+    "enableReportHistory": true
+  },
+  "security": {
+    "requireHIPAACompliantModels": true,
+    "enableSessionCleanup": true,
+    "logMedicalInteractions": false
+  },
+  "checklistCategories": [
+    "Metabolic Health",
+    "Cardiovascular Health", 
+    "Cancer Risk (Early Detection)",
+    "Neurodegenerative Disease Risk",
+    "Physical Fitness and Function"
+  ]
+}

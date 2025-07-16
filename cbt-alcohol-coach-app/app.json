@@ -1,0 +1,27 @@
+{
+  "name": "CBT Alcohol Coach",
+  "version": "1.0.0",
+  "description": "Real-time CBT-based alcohol-use disorder AI coach utilizing structured sessions with memory and urgent intervention support",
+  "author": "Charmonator Team",
+  "main": "routes/cbt-alcohol-coach.mjs",
+  "config": {
+    "sessionDuration": 3600000,
+    "model": "hipaa:gpt-4.1",
+    "temperature": 0.3,
+    "maxRecordSize": 1048576,
+    "supportedFormats": ["pdf", "jpg", "jpeg", "png", "txt", "docx"],
+    "features": {
+      "urgentSessions": true,
+      "longTermSessions": true,
+      "sessionMemory": true,
+      "practiceExercises": true,
+      "relapsePrevention": true
+    }
+  },
+  "routes": {
+    "prePopulate": "/pre-populate",
+    "interface": "/interface",
+    "urgentSession": "/urgent-session"
+  },
+  "systemPromptFile": "../../../FHIR-HOSE/resources/cbt-alcohol-use-disorder-prompt.md"
+}

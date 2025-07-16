@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#007aff">
+    <title>Clinical Trial Matcher - Quick Launch</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #1d1d1f;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 10px;
+            letter-spacing: -0.01em;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #86868b;
+            font-weight: 400;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1d1d1f;
+            font-size: 1.1rem;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 20px;
+            border: 2px solid #e5e5e7;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 16px;
+            line-height: 1.6;
+            resize: vertical;
+            transition: border-color 0.2s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #007aff;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .form-group textarea::placeholder {
+            color: #86868b;
+            font-style: italic;
+        }
+
+        .btn {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #86868b;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .example-section {
+            background: rgba(0, 122, 255, 0.05);
+            border: 1px solid rgba(0, 122, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .example-section h3 {
+            color: #007aff;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .example-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .copy-btn {
+            background: #f2f2f7;
+            color: #007aff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background: #e8e8ed;
+        }
+
+        .instructions {
+            background: #f9f9f9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            color: #1d1d1f;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .instructions ol {
+            padding-left: 20px;
+            color: #666;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .error-message {
+            background: #fadbd8;
+            border: 1px solid #e74c3c;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            color: #c0392b;
+            display: none;
+        }
+
+        .success-message {
+            background: #d1f2eb;
+            border: 1px solid #00b074;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            color: #00703c;
+            display: none;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .container {
+                padding: 25px;
+                border-radius: 16px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .form-group textarea {
+                min-height: 250px;
+                padding: 15px;
+            }
+            
+            .btn {
+                padding: 14px 24px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+                border-radius: 12px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .form-group textarea {
+                min-height: 200px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧬 Clinical Trial Matcher</h1>
+            <p>Enter patient medical record to launch trial matching interface</p>
+        </div>
+
+        <div class="instructions">
+            <h3>How it works:</h3>
+            <ol>
+                <li>Enter or paste the patient's medical record in the textarea below</li>
+                <li>Click "Launch Trial Matcher" to generate a personalized interface</li>
+                <li>The interface will open with the medical record pre-loaded but hidden</li>
+                <li>Select trial criteria (NCT number or manual entry) to begin evaluation</li>
+            </ol>
+        </div>
+
+        <div class="example-section">
+            <h3>📝 Example Medical Record</h3>
+            <div class="example-text">
+                Patient is a 28-year-old female with systemic lupus erythematosus diagnosed 2 years ago. Current symptoms include joint pain in hands and knees, morning stiffness lasting 2 hours, and fatigue. Recent laboratory results show positive ANA (1:320), positive anti-dsDNA antibodies, and elevated ESR (45 mm/hr). Current medications include hydroxychloroquine 400mg daily and prednisone 10mg daily. Patient reports good medication compliance but continued disease activity despite current therapy.
+            </div>
+            <button class="copy-btn" onclick="copyExample()">Copy Example</button>
+        </div>
+
+        <form id="launchForm">
+            <div class="form-group">
+                <label for="medicalRecord">Patient Medical Record:</label>
+                <textarea 
+                    id="medicalRecord" 
+                    name="medicalRecord" 
+                    placeholder="Enter patient's medical record here...
+
+Example: Patient is a [age]-year-old [gender] with [primary condition]. Current symptoms include [symptoms]. Recent laboratory results show [lab results]. Current medications include [medications]. [Additional relevant clinical information]..."
+                    required
+                ></textarea>
+            </div>
+
+            <button type="submit" id="launchBtn" class="btn">
+                <span id="btnText">🚀 Launch Trial Matcher</span>
+                <div id="spinner" class="spinner" style="display: none;"></div>
+            </button>
+        </form>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+    </div>
+
+    <script>
+        const exampleText = `Patient is a 28-year-old female with systemic lupus erythematosus diagnosed 2 years ago. Current symptoms include joint pain in hands and knees, morning stiffness lasting 2 hours, and fatigue. Recent laboratory results show positive ANA (1:320), positive anti-dsDNA antibodies, and elevated ESR (45 mm/hr). Current medications include hydroxychloroquine 400mg daily and prednisone 10mg daily. Patient reports good medication compliance but continued disease activity despite current therapy.`;
+
+        function copyExample() {
+            const textarea = document.getElementById('medicalRecord');
+            textarea.value = exampleText;
+            textarea.focus();
+            
+            // Visual feedback
+            const copyBtn = event.target;
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = '✅ Copied!';
+            copyBtn.style.background = '#d1f2eb';
+            copyBtn.style.color = '#00703c';
+            
+            setTimeout(() => {
+                copyBtn.textContent = originalText;
+                copyBtn.style.background = '#f2f2f7';
+                copyBtn.style.color = '#007aff';
+            }, 2000);
+        }
+
+        document.getElementById('launchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const medicalRecord = document.getElementById('medicalRecord').value.trim();
+            const launchBtn = document.getElementById('launchBtn');
+            const btnText = document.getElementById('btnText');
+            const spinner = document.getElementById('spinner');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            
+            // Hide previous messages
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            
+            // Validate input
+            if (!medicalRecord) {
+                showError('Please enter a medical record before launching.');
+                return;
+            }
+            
+            if (medicalRecord.length < 20) {
+                showError('Medical record seems too short. Please provide more detailed information.');
+                return;
+            }
+            
+            // Show loading state
+            launchBtn.disabled = true;
+            btnText.textContent = 'Generating Interface...';
+            spinner.style.display = 'block';
+            
+            try {
+                const response = await fetch('/charm/apps/clinical-trial-matcher/populate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        medicalRecord: medicalRecord
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                // Get the HTML content and session ID
+                const htmlContent = await response.text();
+                const sessionId = response.headers.get('X-Session-ID');
+                
+                // Open in new window
+                const popup = window.open('', '_blank', 'width=1400,height=900,scrollbars=yes,resizable=yes');
+                
+                if (!popup) {
+                    throw new Error('Popup blocked. Please allow popups for this site and try again.');
+                }
+                
+                popup.document.write(htmlContent);
+                popup.document.close();
+                
+                // Show success message
+                showSuccess(`✅ Trial matcher launched successfully! Session ID: ${sessionId}`);
+                
+                // Optional: Clear the form
+                // document.getElementById('medicalRecord').value = '';
+                
+            } catch (error) {
+                console.error('Error launching trial matcher:', error);
+                showError(`Failed to launch trial matcher: ${error.message}`);
+            } finally {
+                // Reset button state
+                launchBtn.disabled = false;
+                btnText.textContent = '🚀 Launch Trial Matcher';
+                spinner.style.display = 'none';
+            }
+        });
+        
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            errorMessage.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function showSuccess(message) {
+            const successMessage = document.getElementById('successMessage');
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            successMessage.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Auto-resize textarea
+        document.getElementById('medicalRecord').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.max(300, this.scrollHeight) + 'px';
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + Enter to submit
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('launchForm').dispatchEvent(new Event('submit'));
+            }
+        });
+        
+        // Character counter (optional enhancement)
+        document.getElementById('medicalRecord').addEventListener('input', function() {
+            const length = this.value.length;
+            const label = document.querySelector('label[for="medicalRecord"]');
+            
+            if (length > 0) {
+                label.textContent = `Patient Medical Record (${length} characters):`;
+            } else {
+                label.textContent = 'Patient Medical Record:';
+            }
+        });
+    </script>
+</body>
+</html>

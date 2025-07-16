@@ -1,0 +1,21 @@
+{
+  "name": "Clinical Trial Matcher",
+  "description": "AI-powered eligibility assessment for clinical trials using HIPAA-compliant models",
+  "version": "1.0.0",
+  "baseRoute": "/apps/clinical-trial-matcher",
+  "staticRoute": "/apps/clinical-trial-matcher",
+  "publicDir": "public", 
+  "routesDir": "routes",
+  "enabled": true,
+  "author": "Charmonator Team",
+  "features": [
+    "HIPAA-compliant AI analysis",
+    "Structured criteria evaluation", 
+    "Mobile-friendly interface",
+    "Full-screen iPhone support"
+  ],
+  "models": {
+    "default": "hipaa:o3-high",
+    "fallback": "hipaa:gpt-4o"
+  }
+}
