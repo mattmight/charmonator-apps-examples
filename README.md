@@ -2,6 +2,8 @@
 
 This directory contains example applications that demonstrate the Charmonator modular app system.
 
+**Note**: These examples require the main **[Charmonator](https://github.com/mattmight/charmonator/)** server to run. Please install and configure Charmonator first before using these applications.
+
 ## App System Overview
 
 The Charmonator modular app system allows you to create self-contained applications with:
